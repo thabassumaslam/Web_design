@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <title>Logo Loop</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --tile-width: 160px;
+      --ticker-height: 90px;
+      --rule: #ececee;
+      --ink: #050505;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      background: #fff;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* The faint warm edge mirrors the thin color strip in the reference. */
+    .top-edge {
+      height: 10px;
+      background: linear-gradient(90deg, #633a22, #f0a24e 16%, #9b4e32 37%, #edb45e 57%, #26364a 82%, #8a3e2d);
+      opacity: .85;
+    }
+
+    .ticker {
+      position: relative;
+      width: 100%;
+      height: var(--ticker-height);
+      overflow: hidden;
+      background: #fff;
+      border-bottom: 1px solid var(--rule);
+      isolation: isolate;
+    }
+
+    .ticker-track {
+      display: flex;
+      width: max-content;
+      height: 100%;
+      will-change: transform;
+      animation: move-left var(--loop-duration, 20s) linear infinite;
+    }
+
+    .ticker-half {
+      display: flex;
+      flex: none;
+      height: 100%;
+    }
+
+    .logo-tile {
+      width: var(--tile-width);
+      height: 100%;
+      flex: 0 0 var(--tile-width);
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--rule);
+    }
+
+    .logo-tile:first-child { border-left: 1px solid var(--rule); }
+
+    .logo-tile svg {
+      display: block;
+      width: 30px;
+      height: 30px;
+      fill: currentColor;
+      color: var(--ink);
+    }
+
+    @keyframes move-left {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    .ticker:hover .ticker-track { animation-play-state: paused; }
+
+    @media (max-width: 600px) {
+      :root { --tile-width: 25vw; --ticker-height: 76px; }
+      .logo-tile svg { width: 27px; height: 27px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ticker-track { animation-duration: 80s; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-edge" aria-hidden="true"></div>
+  <main>
+    <section class="ticker" aria-label="Featured brands">
+      <div class="ticker-track" id="tickerTrack"></div>
+    </section>
+  </main>
+
+  <script>
+    // Four original, monochrome marks inspired by the compact logos in the reference.
+    const logos = [
+      '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.8a13.2 13.2 0 1 0 13.2 13.2A13.2 13.2 0 0 0 16 2.8Zm0 5.1a8.1 8.1 0 0 1 7.8 6H13.8l-5-5A8 8 0 0 1 16 7.9Zm0 16.2a8.1 8.1 0 0 1-7.8-6h10l5 5a8 8 0 0 1-7.2 1Z"/></svg>',
+      '<svg viewBox="0 0 42 32" aria-hidden="true"><path d="M12.4 7.2c-4.1 0-7.6 2.4-9.2 6.1-.9 2.1.6 4.4 2.9 4.4 1.3 0 2.4-.8 2.9-2l.3-.7a3.4 3.4 0 0 1 3.1-2.1h3.3l-5.2 5.7a3.5 3.5 0 0 0 2.6 5.9c1 0 1.9-.4 2.6-1.1l12-13a3.5 3.5 0 0 0-2.6-5.9c-1 0-1.9.4-2.6 1.1l-3.1 3.4h-7Zm17.2 17.6c4.1 0 7.6-2.4 9.2-6.1.9-2.1-.6-4.4-2.9-4.4-1.3 0-2.4.8-2.9 2l-.3.7a3.4 3.4 0 0 1-3.1 2.1h-3.3l5.2-5.7a3.5 3.5 0 0 0-2.6-5.9c-1 0-1.9.4-2.6 1.1l-12 13a3.5 3.5 0 0 0 2.6 5.9c1 0 1.9-.4 2.6-1.1l3.1-3.4h7Z" transform="translate(0 -2)"/></svg>',
+      '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 3.5h22v12.2c0 6.5-4.3 11.2-11 13.1C9.3 26.9 5 22.2 5 15.7V3.5Zm4.2 4.2v7.9c0 4.5 2.2 7.7 6.8 9.1 4.6-1.4 6.8-4.6 6.8-9.1V7.7H9.2Zm3 2.2 3.8 2.4 3.8-2.4v3.4L16 17l-3.8-2.3V9.9Zm1.1 8.6h5.4l-2.7 3.2-2.7-3.2Z"/></svg>',
+      '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 9.2A6.2 6.2 0 0 1 9.2 3h4.1a6.2 6.2 0 0 1 0 12.4H9.2A6.2 6.2 0 0 1 3 9.2Zm15.7 0A6.2 6.2 0 0 1 24.9 3h.1a6.2 6.2 0 0 1 0 12.4h-.1a6.2 6.2 0 0 1-6.2-6.2ZM3 22.8a6.2 6.2 0 0 1 6.2-6.2h.1a6.2 6.2 0 0 1 0 12.4h-.1A6.2 6.2 0 0 1 3 22.8Zm15.7 0a6.2 6.2 0 0 1 6.2-6.2h.1a6.2 6.2 0 0 1 0 12.4h-.1a6.2 6.2 0 0 1-6.2-6.2Z"/></svg>'
+    ];
+
+    const track = document.getElementById('tickerTrack');
+    const tileWidth = () => Math.min(160, window.innerWidth * 0.25);
+
+    function fillTicker() {
+      const width = tileWidth();
+      document.documentElement.style.setProperty('--tile-width', `${width}px`);
+
+      // Each half contains enough repeated four-logo groups to cover the viewport.
+      const groupCount = Math.ceil(window.innerWidth / (width * logos.length)) + 1;
+      const half = document.createElement('div');
+      half.className = 'ticker-half';
+      for (let i = 0; i < groupCount * logos.length; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'logo-tile';
+        tile.innerHTML = logos[i % logos.length];
+        half.appendChild(tile);
+      }
+
+      track.replaceChildren(half, half.cloneNode(true));
+      track.style.setProperty('--loop-duration', `${Math.max(10, half.offsetWidth / 75)}s`);
+    }
+
+    fillTicker();
+    window.addEventListener('resize', fillTicker, { passive: true });
+  </script>
+</body>
+</html>
